@@ -1,6 +1,4 @@
 #include "Window.h"
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
 #include "Simulator.h"
 #include "Camera.h"
 #include "EnumHeader.h"

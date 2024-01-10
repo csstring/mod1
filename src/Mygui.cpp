@@ -44,9 +44,9 @@ void Mygui::update(Simulator& simul)
   ImGui::Checkbox("Enable Generator", &ps->_isGeneratorOn);
 
   if (ImGui::Button("init Plane scene"))                           
-      ps->_CLManager.initPlane();
+      ps->_ParticleCLManager.initPlane();
   if (ImGui::Button("init circle scene"))
-      ps->_CLManager.initCircle();
+      ps->_ParticleCLManager.initCircle();
 
   ImGui::End();
 }

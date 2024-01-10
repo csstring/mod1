@@ -1,12 +1,5 @@
 #pragma once
-#include <OpenCL/opencl.h>
 #include "Common.h"
-enum KernelFunc {
-  MAIN_ROOP,
-  INIT_CIRCLE,
-  INIT_PLANE,
-  GENERATOR
-};
 
 class KernelProgram
 {

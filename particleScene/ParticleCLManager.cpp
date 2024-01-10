@@ -1,10 +1,9 @@
-#include "CLManager.h"
+#include "ParticleCLManager.h"
 #include <fstream>
 #include <sstream>
-#include <OpenGL/OpenGL.h>
 #include <random>
 
-void CLManager::initialize(uint32 VBO, uint64 count)
+void ParticleCLManager::initialize(uint32 VBO, uint64 count)
 {
   ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
   if (ret != CL_SUCCESS) {
@@ -50,15 +49,15 @@ void CLManager::initialize(uint32 VBO, uint64 count)
   }
 
   _programs.resize(4);
-  _programs[MAIN_ROOP].initialize(context, device_id, "./kernelSource/particle_sys.cl", "particle_sys");
-  _programs[INIT_CIRCLE].initialize(context, device_id, "./kernelSource/init_circle.cl", "init_circle");
-  _programs[INIT_PLANE].initialize(context, device_id, "./kernelSource/init_plane.cl", "init_plane");
-  _programs[GENERATOR].initialize(context, device_id, "./kernelSource/particle_generator.cl", "particle_generator");
+  _programs[MAIN_ROOP].initialize(context, device_id, "./particleScene/kernelSource/particle_sys.cl", "particle_sys");
+  _programs[INIT_CIRCLE].initialize(context, device_id, "./particleScene/kernelSource/init_circle.cl", "init_circle");
+  _programs[INIT_PLANE].initialize(context, device_id, "./particleScene/kernelSource/init_plane.cl", "init_plane");
+  _programs[GENERATOR].initialize(context, device_id, "./particleScene/kernelSource/particle_generator.cl", "particle_generator");
 
   global_item_size = count;
 }
 
-void CLManager::initCircle()
+void ParticleCLManager::initCircle()
 {
   cl_kernel kernel = _programs[INIT_CIRCLE]._kernel;
   uint32 seed = _rd();
@@ -69,7 +68,7 @@ void CLManager::initCircle()
   clFinish(command_queue);
 }
 
-void CLManager::initPlane()
+void ParticleCLManager::initPlane()
 {
   cl_kernel kernel = _programs[INIT_PLANE]._kernel;
   uint32 seed = _rd();
@@ -80,7 +79,7 @@ void CLManager::initPlane()
   clFinish(command_queue);
 }
 
-void CLManager::particleGenerate(float dt, const glm::vec4& gravity)
+void ParticleCLManager::particleGenerate(float dt, const glm::vec4& gravity)
 {
   dt *= 0.4;
   const size_t geCount = 5000;
@@ -94,7 +93,7 @@ void CLManager::particleGenerate(float dt, const glm::vec4& gravity)
   clFinish(command_queue);
 }
 
-void CLManager::update(float dt, const glm::vec4& gravity, int32 drawCount)
+void ParticleCLManager::update(float dt, const glm::vec4& gravity, int32 drawCount)
 {
     const size_t totalParticles = drawCount;  // Total number of particles
     dt *= 0.4;
@@ -109,7 +108,7 @@ void CLManager::update(float dt, const glm::vec4& gravity, int32 drawCount)
     clFinish(command_queue);
 }
 
-CLManager::~CLManager()
+ParticleCLManager::~ParticleCLManager()
 {
   ret = clFlush(command_queue);
   ret = clFinish(command_queue);

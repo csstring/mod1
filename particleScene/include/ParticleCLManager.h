@@ -1,9 +1,16 @@
 #pragma once
-#include <OpenCL/opencl.h>
 #include "Common.h"
 #include "KernelProgram.h"
 #include <random>
-class CLManager
+
+enum KernelFunc {
+  MAIN_ROOP,
+  INIT_CIRCLE,
+  INIT_PLANE,
+  GENERATOR
+};
+
+class ParticleCLManager
 {
   private:
     cl_platform_id platform_id;
@@ -19,8 +26,8 @@ class CLManager
   public:
     std::random_device _rd;
     cl_context context;
-    CLManager(){};
-    ~CLManager();
+    ParticleCLManager(){};
+    ~ParticleCLManager();
     void initialize(uint32 VBO, uint64 count);
     void initCircle();
     void initPlane();

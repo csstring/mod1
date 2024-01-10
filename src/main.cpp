@@ -1,13 +1,10 @@
 #define GL_SILENCE_DEPRECATION
-#include "GLFW/glfw3.h"
 #include "Window.h"
-#include "shader.h"
+#include "Shader.h"
 #include "Simulator.h"
 #include "Camera.h"
 #include <iostream>
 #include "Mygui.h"
-#include <OpenCL/opencl.h>
-#include "ShaderManager.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -57,13 +54,11 @@ int main(int ac, char** av)
         return 1;
     }
 
-    ShaderManager shaderManager;
     Window      window;
     Simulator*  simulator = new Simulator();
     Camera& _camera = Camera::getInstance();
     window.initialize();
     _camera.initialize();
-    shaderManager.initialize();
     Mygui::getInstance().initialize(window._window);
     simulator->initialize(std::ceil(count / 64.0f) * 64.0f);
 
@@ -78,11 +73,6 @@ int main(int ac, char** av)
         Mygui::getInstance().update(*simulator);
         window.processInput(delta, *simulator);
         _camera.update();
-        glPointSize(4);
-        shaderManager.use(PARTICLE_SHAPE::QURD);
-        shaderManager.setMat4("projection", _camera.getProjection());
-        shaderManager.setMat4("view", _camera._view);
-        shaderManager.setVec4("cursorPos", _camera.getProjection() * _camera._view * _camera.getWorldCursorPos());
         simulator->update(delta * simulator->_speed);
         simulator->draw();
         Mygui::getInstance().render();

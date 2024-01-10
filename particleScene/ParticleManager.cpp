@@ -1,5 +1,4 @@
 #include "ParticleManager.h"
-#include "GL/glew.h"
 #include "Camera.h"
 #include "Particle.h"
 
@@ -15,7 +14,7 @@ void ParticleManager::initialize()
   glBindVertexArray(_VAO);
   glGenBuffers(1, &_VBO);
   glBindBuffer(GL_ARRAY_BUFFER, _VBO);
-  glBufferData(GL_ARRAY_BUFFER, _particleCount * sizeof(Particle), nullptr, GL_DYNAMIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, _particleCount * sizeof(Particle), nullptr, GL_STATIC_DRAW);
 
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), (void*)offsetof(Particle, _position));
   glEnableVertexAttribArray(0);

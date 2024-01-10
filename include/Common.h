@@ -7,6 +7,10 @@
 #include <ostream>
 #include <cmath>
 #include <filesystem>
+#include "GL/glew.h"
+#include "GLFW/glfw3.h"
+#include <OpenCL/opencl.h>
+#include <OpenGL/OpenGL.h>
 #include "GLM/glm.hpp"
 #include "GLM/gtx/string_cast.hpp"
 

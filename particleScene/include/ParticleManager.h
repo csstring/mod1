@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "Particle.h"
+
 //thread
 class Camera;
 class ParticleManager : Noncopyable
