@@ -1,6 +1,7 @@
 #include "ParticleManager.h"
 #include "Camera.h"
 #include "Particle.h"
+#include "DDSLoder.h" 
 
 ParticleManager::~ParticleManager()
 {
@@ -10,6 +11,9 @@ ParticleManager::~ParticleManager()
 
 void ParticleManager::initialize()
 {
+  DDSLoder textureLoder(std::filesystem::canonical("./particleScene/uvmap.dds"));
+  _textureID = textureLoder.loadDDS();
+
   glGenVertexArrays(1, &_VAO);
   glBindVertexArray(_VAO);
   glGenBuffers(1, &_VBO);
@@ -30,6 +34,7 @@ void ParticleManager::initialize()
 
 void ParticleManager::draw(uint32 drawCount)
 {
+  // glBindTexture(GL_TEXTURE_2D, _textureID);
   glBindVertexArray(_VAO);
   glDrawArrays(GL_POINTS, 0, drawCount);
   glBindVertexArray(0);

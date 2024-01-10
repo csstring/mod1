@@ -8,7 +8,8 @@ class ParticleManager : Noncopyable
   private:
     uint32 _particleCount;
     uint32 _VAO;
-
+    uint32 _textureID;
+    
   public:
     glm::vec3 _camPos;
     uint32 _VBO;

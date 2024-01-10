@@ -39,7 +39,7 @@ void Mygui::update(Simulator& simul)
 
   ImGui::Begin("Bonus"); 
 
-  ImGui::SliderInt("Particle Size", &ps->_pointSize, 1, 10);
+  ImGui::SliderInt("Particle Size", &ps->_pointSize, 1, 30);
   ImGui::SliderInt("Simul Speed", &simul._speed, 0, 5);
   ImGui::Checkbox("Enable Generator", &ps->_isGeneratorOn);
 
