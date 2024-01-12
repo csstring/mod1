@@ -17,11 +17,8 @@ class StableFluidsScene : public Scene
     bool _isGeneratorOn = false;
 
   public:
-    StableFluidsScene() = delete;
-    StableFluidsScene(uint32 particleCount)
-    : _particleManager(particleCount){
-    };
-    ~StableFluidsScene(){};
+    StableFluidsScene(){}
+    ~StableFluidsScene(){}
 
     void initialize();
     void update(float dt);

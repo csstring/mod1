@@ -4,28 +4,24 @@
 
 void StableFluidsScene::initialize()
 {
-  _particleShader.initialize();
-  _particleManager.initialize();
-  // _ParticleCLManager.initialize(_particleManager._VBO, _particleManager.getParticleCount());
+  _stableFluidsShader.initialize();
+  _stableFluidsManager.initialize();
+  _stableFluidsCLManager.initialize(_stableFluidsManager._textures);
   // _ParticleCLManager.initPlane();
 }
 
 void StableFluidsScene::update(float dt)
 {
-  // glm::vec4 gravity = Camera::getInstance().getWorldCursorPos();
-  // if (_isGravityOn == false)
-  //   gravity.w = 0;
-  // if (_isGeneratorOn == true)
-  //   _ParticleCLManager.particleGenerate(dt, gravity);
-  // _ParticleCLManager.update(dt, gravity, drawCount);
+  glm::vec4 gravity = Camera::getInstance().getWorldCursorPos();
+  _stableFluidsCLManager.sourcing(gravity);
 }
 
 void StableFluidsScene::draw()
 {
   Camera& camera = Camera::getInstance();
-  _particleShader.use();
-  _particleShader.setMat4("projection", camera.getProjection());
-  _particleShader.setMat4("view", camera._view);
+  _stableFluidsShader.use();
+  _stableFluidsShader.setMat4("projection", camera.getProjection());
+  _stableFluidsShader.setMat4("view", camera._view);
   // _particleShader.setVec4("cursorPos", camera.getProjection() * camera._view * camera.getWorldCursorPos());
   // glPointSize(_pointSize);
   // switch (particleShape)
@@ -37,5 +33,5 @@ void StableFluidsScene::draw()
   //     _particleShader.setUint("shape", 0);
   //     break;
   // }
-  _particleManager.draw(drawCount);
+  _stableFluidsManager.draw();
 }

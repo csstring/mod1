@@ -2,8 +2,10 @@
 #include <fstream>
 #include <sstream>
 #include <random>
+#include "EnumHeader.h"
+#include "Texture2D.h"
 
-void StableFluidsCLManager::initialize(uint32 VBO, uint64 count)
+void StableFluidsCLManager::initialize(Texture2D* textureids)
 {
   ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
   if (ret != CL_SUCCESS) {
@@ -11,14 +13,12 @@ void StableFluidsCLManager::initialize(uint32 VBO, uint64 count)
       ft_assert("clGetPlatformIDs");
   }
 
-  // Get device IDs
   ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id, &ret_num_devices);
   if (ret != CL_SUCCESS || ret_num_devices == 0) {
       std::cout << "Error getting device IDs or no devices found: " << ret << std::endl;
       ft_assert("clGetDeviceIDs");
   }
 
-  // Verify GL context and share group
   CGLContextObj glContext = CGLGetCurrentContext();
   if (glContext == NULL) {
       ft_assert("CGLGetCurrentContext returned NULL");
@@ -42,79 +42,65 @@ void StableFluidsCLManager::initialize(uint32 VBO, uint64 count)
     std::cout << ret << std::endl;
     ft_assert("clCreateCommandQueue");
   }
-  clVBO = clCreateFromGLBuffer(context, CL_MEM_READ_WRITE, VBO, &ret);
   
+  CLTextureID[TEXTUREID::VELOCITY] = clCreateFromGLTexture(context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, textureids[TEXTUREID::VELOCITY].getID(), &ret);
+  CLTextureID[TEXTUREID::VELOCITYTMP] = clCreateFromGLTexture(context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, textureids[TEXTUREID::VELOCITYTMP].getID(), &ret);
+  CLTextureID[TEXTUREID::VORTICITY] = clCreateFromGLTexture(context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, textureids[TEXTUREID::VORTICITY].getID(), &ret);
+  CLTextureID[TEXTUREID::PRESSURE] = clCreateFromGLTexture(context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, textureids[TEXTUREID::PRESSURE].getID(), &ret);
+  CLTextureID[TEXTUREID::PRESSURETMP] = clCreateFromGLTexture(context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, textureids[TEXTUREID::PRESSURETMP].getID(), &ret);
+  CLTextureID[TEXTUREID::DIVERGENCE] = clCreateFromGLTexture(context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, textureids[TEXTUREID::DIVERGENCE].getID(), &ret);
+  CLTextureID[TEXTUREID::DENSITY] = clCreateFromGLTexture(context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, textureids[TEXTUREID::DENSITY].getID(), &ret);
+  CLTextureID[TEXTUREID::DENSITYTMP] = clCreateFromGLTexture(context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, textureids[TEXTUREID::DENSITYTMP].getID(), &ret);
+  samplerLinearWrap = clCreateSampler(context, CL_FALSE, CL_ADDRESS_REPEAT, CL_FILTER_LINEAR, NULL);
   if (ret != 0){
     std::cout << ret << std::endl;
     ft_assert("clCreateFromGLBuffer");
   }
 
-  _programs.resize(4);
-  _programs[MAIN_ROOP].initialize(context, device_id, "./particleScene/kernelSource/particle_sys.cl", "particle_sys");
-  _programs[INIT_CIRCLE].initialize(context, device_id, "./particleScene/kernelSource/init_circle.cl", "init_circle");
-  _programs[INIT_PLANE].initialize(context, device_id, "./particleScene/kernelSource/init_plane.cl", "init_plane");
-  _programs[GENERATOR].initialize(context, device_id, "./particleScene/kernelSource/particle_generator.cl", "particle_generator");
-
-  global_item_size = count;
+  _programs.resize(2);
+  _programs[SFKernelFunc::SOURCING].initialize(context, device_id, "./stableFluidsScene/kernelSource/sourcing.cl", "sourcing");
+  // _programs[SFKernelFunc::ADVECT].initialize(context, device_id, "./stableFluidsScene/kernelSource/advect.cl", "advect");
 }
 
-void StableFluidsCLManager::initCircle()
+void StableFluidsCLManager::sourcing(const glm::vec4& cursor)
 {
-  cl_kernel kernel = _programs[INIT_CIRCLE]._kernel;
-  uint32 seed = _rd();
-
-  clSetKernelArg(kernel, 0, sizeof(cl_mem), &clVBO);
-  clSetKernelArg(kernel, 1, sizeof(uint32), &seed);
-  clEnqueueNDRangeKernel(command_queue, kernel, 1, nullptr, &global_item_size, nullptr, 0, nullptr, nullptr);
+  cl_kernel kernel = _programs[SFKernelFunc::SOURCING]._kernel;
+  static int color = 0;
+  glm::vec4 vel(0.0f);
+  static const std::vector<glm::vec4> rainbow = {
+                {1.0f, 0.0f, 0.0f, 1.0f},  // Red
+                {1.0f, 0.65f, 0.0f, 1.0f}, // Orange
+                {1.0f, 1.0f, 0.0f, 1.0f},  // Yellow
+                {0.0f, 1.0f, 0.0f, 1.0f},  // Green
+                {0.0f, 0.0f, 1.0f, 1.0f},  // Blue
+                {0.3f, 0.0f, 0.5f, 1.0f},  // Indigo
+                {0.5f, 0.0f, 1.0f, 1.0f}   // Violet/Purple
+            };
+  clSetKernelArg(kernel, 0, sizeof(cl_mem), &CLTextureID[TEXTUREID::VELOCITY]);
+  clSetKernelArg(kernel, 1, sizeof(cl_mem), &CLTextureID[TEXTUREID::DENSITY]);
+  clSetKernelArg(kernel, 2, sizeof(cl_sampler), &samplerLinearWrap);
+  clSetKernelArg(kernel, 3, 4 * sizeof(float), &cursor);
+  clSetKernelArg(kernel, 4, 4 * sizeof(float), &vel);
+  clSetKernelArg(kernel, 5, 4 * sizeof(float), &rainbow[(color++) % 7]);
+  size_t global_work_size[2] = {static_cast<size_t>(WINDOW_WITH), static_cast<size_t>(WINDOW_HEIGHT)}; // Replace 1024 with your actual dimensions
+  ret = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, global_work_size, NULL, 0, NULL, NULL);
+  if (ret != CL_SUCCESS) {
+    std::cout << ret << std::endl;
+    ft_assert("Error enqueuing kernel");
+  }
   clFinish(command_queue);
 }
 
-void StableFluidsCLManager::initPlane()
-{
-  cl_kernel kernel = _programs[INIT_PLANE]._kernel;
-  uint32 seed = _rd();
 
-  clSetKernelArg(kernel, 0, sizeof(cl_mem), &clVBO);
-  clSetKernelArg(kernel, 1, sizeof(uint32), &seed);
-  clEnqueueNDRangeKernel(command_queue, kernel, 1, nullptr, &global_item_size, nullptr, 0, nullptr, nullptr);
-  clFinish(command_queue);
-}
-
-void StableFluidsCLManager::stableFluidsGenerate(float dt, const glm::vec4& gravity)
-{
-  dt *= 0.4;
-  const size_t geCount = 5000;
-  cl_kernel generator = _programs[GENERATOR]._kernel;
-  uint32 seed = _rd();
-  clSetKernelArg(generator, 0, sizeof(cl_mem), &clVBO);
-  clSetKernelArg(generator, 1, sizeof(uint32), &seed);
-  clSetKernelArg(generator, 2, 4 * sizeof(float), &gravity);
-  clSetKernelArg(generator, 3, sizeof(float), &dt);
-  clEnqueueNDRangeKernel(command_queue, generator, 1, nullptr, &geCount, nullptr, 0, nullptr, nullptr);
-  clFinish(command_queue);
-}
-
-void StableFluidsCLManager::update(float dt, const glm::vec4& gravity, int32 drawCount)
-{
-    const size_t totalParticles = drawCount;  // Total number of particles
-    dt *= 0.4;
-    cl_kernel kernel = _programs[MAIN_ROOP]._kernel;
-
-    clSetKernelArg(kernel, 0, sizeof(cl_mem), &clVBO);
-    clSetKernelArg(kernel, 1, sizeof(float), &dt);
-    clSetKernelArg(kernel, 2, 4 * sizeof(float), &gravity);
-
-    clEnqueueNDRangeKernel(command_queue, kernel, 1, nullptr, &totalParticles, nullptr, 0, nullptr, nullptr);
-
-    clFinish(command_queue);
-}
 
 StableFluidsCLManager::~StableFluidsCLManager()
 {
   ret = clFlush(command_queue);
   ret = clFinish(command_queue);
   this->_programs.clear();
-  ret = clReleaseMemObject(clVBO);
+  for (int i =0; i <8; ++i){
+    clReleaseMemObject(this->CLTextureID[i]);
+  }
   ret = clReleaseCommandQueue(command_queue);
   ret = clReleaseContext(context);
 }

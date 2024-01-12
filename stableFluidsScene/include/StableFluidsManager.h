@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-
+#include "Texture2D.h"
 //thread
 class Camera;
 
@@ -8,20 +8,17 @@ class StableFluidsManager : Noncopyable
 {
   private:
     uint32 _VAO;
-    
+    void initTexture();
+
   public:
     glm::vec3 _camPos;
     uint32 _VBO;
-    uint32 m_velocity, m_velocityTemp;
-    uint32 m_vorticity;
-    uint32 m_pressure, m_pressureTemp;
-    uint32 m_divergence;
-    uint32 m_density, m_densityTemp;
+    Texture2D _textures[8];
 
   public:
-    StableFluidsManager(uint32 count){};
+    StableFluidsManager(){};
     ~StableFluidsManager();
 
     void initialize();
-    void draw(uint32 drawCount);
+    void draw();
 };

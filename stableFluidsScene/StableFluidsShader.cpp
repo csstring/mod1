@@ -6,8 +6,8 @@ void StableFluidsShader::initialize()
 	int32 InfoLogLength;
 
 	_programId = glCreateProgram();
-	attachShader("./stableFluidsScene/shaderSource/ParticleVertexShader.glsl", GL_VERTEX_SHADER);
-	attachShader("./stableFluidsScene/shaderSource/ParticleFragmentShader.glsl", GL_FRAGMENT_SHADER);
+	attachShader("./stableFluidsScene/shaderSource/stableFluidsVertexShader.glsl", GL_VERTEX_SHADER);
+	attachShader("./stableFluidsScene/shaderSource/stableFluidsFragmentShader.glsl", GL_FRAGMENT_SHADER);
 	glLinkProgram(_programId);
 
 	glGetProgramiv(_programId, GL_LINK_STATUS, &Result);

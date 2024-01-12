@@ -15,6 +15,7 @@
 #include "GLM/gtx/string_cast.hpp"
 
 #define GL_SILENCE_DEPRECATION
+
 typedef signed char         int8;
 typedef signed short        int16;
 typedef signed int          int32;

@@ -38,6 +38,48 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
         return ;
     _camera.ProcessMouseMovement(xoffset, yoffset, true);
 }
+void cvcheck() {
+    cl_uint numPlatforms;
+    clGetPlatformIDs(0, NULL, &numPlatforms);
+    cl_platform_id* platforms = (cl_platform_id*)malloc(sizeof(cl_platform_id) * numPlatforms);
+    clGetPlatformIDs(numPlatforms, platforms, NULL);
+
+    for (cl_uint i = 0; i < numPlatforms; ++i) {
+        char info[1024];
+        clGetPlatformInfo(platforms[i], CL_PLATFORM_NAME, 1024, info, NULL);
+        std::cout << "Platform Name: " << info << std::endl;
+
+        clGetPlatformInfo(platforms[i], CL_PLATFORM_VENDOR, 1024, info, NULL);
+        std::cout << "Platform Vendor: " << info << std::endl;
+
+        clGetPlatformInfo(platforms[i], CL_PLATFORM_VERSION, 1024, info, NULL);
+        std::cout << "Platform Version: " << info << std::endl;
+
+        clGetPlatformInfo(platforms[i], CL_PLATFORM_EXTENSIONS, 1024, info, NULL);
+        std::cout << "Platform Extensions: " << info << std::endl;
+
+        cl_uint numDevices;
+        clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, 0, NULL, &numDevices);
+        cl_device_id* devices = (cl_device_id*)malloc(sizeof(cl_device_id) * numDevices);
+        clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, numDevices, devices, NULL);
+
+        for (cl_uint j = 0; j < numDevices; ++j) {
+            clGetDeviceInfo(devices[j], CL_DEVICE_NAME, sizeof(info), info, NULL);
+            std::cout << "\tDevice Name: " << info << std::endl;
+
+            size_t maxWorkGroupSize;
+            clGetDeviceInfo(devices[j], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(maxWorkGroupSize), &maxWorkGroupSize, NULL);
+            std::cout << "\tMax Work Group Size: " << maxWorkGroupSize << std::endl;
+            cl_bool imageSupport;
+            clGetDeviceInfo(devices[j], CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &imageSupport, NULL);
+            std::cout << "\tImage Support: " << (imageSupport ? "Yes" : "No") << std::endl;
+        }
+
+        free(devices);
+    }
+
+    free(platforms);
+}
 
 int main(int ac, char** av) 
 {
@@ -48,6 +90,7 @@ int main(int ac, char** av)
         std::cerr << "input error : to many argument\n";
         return 1;
     }
+    cvcheck();
     float count = std::atof(av[1]);
     if (count == 0.0f){
         std::cerr << "input error : not number";
