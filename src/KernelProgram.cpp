@@ -28,15 +28,6 @@ void KernelProgram::initialize(cl_context context, cl_device_id deviceID, std::s
     ft_assert("clCreateProgramWithSource");
   }
   ret = clBuildProgram(_program, 1, &deviceID, nullptr, nullptr, nullptr);
-  size_t log_size = 5000;
-// clGetProgramBuildInfo(_program, deviceID, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
-
-// char *build_log = (char *)malloc(log_size + 1);
-// clGetProgramBuildInfo(_program, deviceID, CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
-// build_log[log_size] = '\0';
-// std::cout << "Build Log:\n" << build_log << std::endl;
-// free(build_log);
-  
   if (ret != 0){
     std::cout << ret << std::endl;
     ft_assert("clBuildProgram");
@@ -46,7 +37,6 @@ void KernelProgram::initialize(cl_context context, cl_device_id deviceID, std::s
     std::cout << ret << std::endl;
     ft_assert("clCreateKernel");
   } 
-  ft_assert("build end");
 }
 
 KernelProgram::~KernelProgram()

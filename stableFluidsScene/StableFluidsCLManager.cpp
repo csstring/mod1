@@ -2,8 +2,8 @@
 #include <fstream>
 #include <sstream>
 #include <random>
-#include "EnumHeader.h"
 #include "Texture2D.h"
+#include "Camera.h"
 
 void StableFluidsCLManager::initialize(Texture2D* textureids)
 {
@@ -51,15 +51,74 @@ void StableFluidsCLManager::initialize(Texture2D* textureids)
   CLTextureID[TEXTUREID::DIVERGENCE] = clCreateFromGLTexture(context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, textureids[TEXTUREID::DIVERGENCE].getID(), &ret);
   CLTextureID[TEXTUREID::DENSITY] = clCreateFromGLTexture(context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, textureids[TEXTUREID::DENSITY].getID(), &ret);
   CLTextureID[TEXTUREID::DENSITYTMP] = clCreateFromGLTexture(context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, textureids[TEXTUREID::DENSITYTMP].getID(), &ret);
-  samplerLinearWrap = clCreateSampler(context, CL_FALSE, CL_ADDRESS_REPEAT, CL_FILTER_LINEAR, NULL);
+  samplerLinearWrap = clCreateSampler(context, CL_FALSE, CL_ADDRESS_CLAMP, CL_FILTER_NEAREST, NULL);
   if (ret != 0){
     std::cout << ret << std::endl;
     ft_assert("clCreateFromGLBuffer");
   }
 
-  _programs.resize(2);
+  _programs.resize(4);
   _programs[SFKernelFunc::SOURCING].initialize(context, device_id, "./stableFluidsScene/kernelSource/sourcing.cl", "sourcing");
-  // _programs[SFKernelFunc::ADVECT].initialize(context, device_id, "./stableFluidsScene/kernelSource/advect.cl", "advect");
+  _programs[SFKernelFunc::ADVECT].initialize(context, device_id, "./stableFluidsScene/kernelSource/advect.cl", "advect");
+  _programs[SFKernelFunc::COPY].initialize(context, device_id, "./stableFluidsScene/kernelSource/copyTexture.cl", "copyTexture");
+  _programs[SFKernelFunc::PRINT].initialize(context, device_id, "./stableFluidsScene/kernelSource/printTexture.cl", "printTexture");
+
+  debug1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, 
+            count * sizeof(float), NULL, &ret);
+  debug2 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, 
+            count * sizeof(float), NULL, &ret);
+  debug3 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, 
+            count * sizeof(float), NULL, &ret);
+  debug4 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, 
+            count * sizeof(float), NULL, &ret);
+  A = (float*)malloc(sizeof(float)*count);
+  B = (float*)malloc(sizeof(float)*count);
+  C = (float*)malloc(sizeof(float)*count);
+  D = (float*)malloc(sizeof(float)*count);
+
+}
+
+void StableFluidsCLManager::printTextureColor(TEXTUREID src)
+{
+  cl_kernel kernel = _programs[SFKernelFunc::PRINT]._kernel;
+  size_t global_work_size[2] = {static_cast<size_t>(WINDOW_WITH), static_cast<size_t>(WINDOW_HEIGHT)};
+  clSetKernelArg(kernel, 0, sizeof(cl_mem), &CLTextureID[src]);
+  clSetKernelArg(kernel, 1, sizeof(int32), &global_work_size[0]);
+  clSetKernelArg(kernel, 2, sizeof(int32), &global_work_size[1]);
+  clSetKernelArg(kernel, 3, sizeof(cl_sampler), &samplerLinearWrap);
+  clSetKernelArg(kernel, 4, sizeof(cl_mem), &debug1);
+  clSetKernelArg(kernel, 5, sizeof(cl_mem), &debug2);
+  clSetKernelArg(kernel, 6, sizeof(cl_mem), &debug3);
+  clSetKernelArg(kernel, 7, sizeof(cl_mem), &debug4);
+  clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, global_work_size, NULL, 0, NULL, NULL);
+  clFinish(command_queue);
+
+  clEnqueueReadBuffer(command_queue, debug1, CL_TRUE, 0, 
+            count * sizeof(float), A, 0, NULL, NULL);
+  clEnqueueReadBuffer(command_queue, debug2, CL_TRUE, 0, 
+            count * sizeof(float), B, 0, NULL, NULL);
+  clEnqueueReadBuffer(command_queue, debug3, CL_TRUE, 0, 
+            count * sizeof(float), C, 0, NULL, NULL);
+  clEnqueueReadBuffer(command_queue, debug4, CL_TRUE, 0, 
+            count * sizeof(float), D, 0, NULL, NULL);
+  for (int i =0; i < 100; ++i){
+    std::cout << "r : "<<A[i] << "  g : " << B[i] << " b : " << C[i] << "  a : " << D[i] << std::endl;
+  }
+}
+
+void StableFluidsCLManager::copyImage(TEXTUREID src, TEXTUREID dst)
+{
+  cl_kernel kernel = _programs[SFKernelFunc::COPY]._kernel;
+  size_t global_work_size[2] = {static_cast<size_t>(WINDOW_WITH), static_cast<size_t>(WINDOW_HEIGHT)};
+  clSetKernelArg(kernel, 0, sizeof(cl_mem), &CLTextureID[src]);
+  clSetKernelArg(kernel, 1, sizeof(cl_mem), &CLTextureID[dst]);
+  clSetKernelArg(kernel, 2, sizeof(cl_sampler), &samplerLinearWrap);
+  ret = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, global_work_size, NULL, 0, NULL, NULL);
+  if (ret != CL_SUCCESS) {
+    std::cout << ret << std::endl;
+    ft_assert("Error enqueuing kernel");
+  }
+  clFinish(command_queue);
 }
 
 void StableFluidsCLManager::sourcing(const glm::vec4& cursor)
@@ -67,28 +126,52 @@ void StableFluidsCLManager::sourcing(const glm::vec4& cursor)
   cl_kernel kernel = _programs[SFKernelFunc::SOURCING]._kernel;
   static int color = 0;
   glm::vec4 vel(0.0f);
-  static const std::vector<glm::vec4> rainbow = {
-                {1.0f, 0.0f, 0.0f, 1.0f},  // Red
-                {1.0f, 0.65f, 0.0f, 1.0f}, // Orange
-                {1.0f, 1.0f, 0.0f, 1.0f},  // Yellow
-                {0.0f, 1.0f, 0.0f, 1.0f},  // Green
-                {0.0f, 0.0f, 1.0f, 1.0f},  // Blue
-                {0.3f, 0.0f, 0.5f, 1.0f},  // Indigo
-                {0.5f, 0.0f, 1.0f, 1.0f}   // Violet/Purple
-            };
-  clSetKernelArg(kernel, 0, sizeof(cl_mem), &CLTextureID[TEXTUREID::VELOCITY]);
-  clSetKernelArg(kernel, 1, sizeof(cl_mem), &CLTextureID[TEXTUREID::DENSITY]);
-  clSetKernelArg(kernel, 2, sizeof(cl_sampler), &samplerLinearWrap);
-  clSetKernelArg(kernel, 3, 4 * sizeof(float), &cursor);
+  Camera cam = Camera::getInstance();
+  size_t global_work_size[2] = {static_cast<size_t>(WINDOW_WITH), static_cast<size_t>(WINDOW_HEIGHT)}; // Replace 1024 with your actual dimensions
+  // std::cout << "x : "<<cam._lastX << " y : " << cam._lastY << std::endl;
+  int32 x = cam._lastX;
+  int32 y = WINDOW_HEIGHT - cam._lastY;
+  copyImage(TEXTUREID::VELOCITY, TEXTUREID::VELOCITYTMP);
+  copyImage(TEXTUREID::DENSITY, TEXTUREID::DENSITYTMP);
+
+  clSetKernelArg(kernel, 0, sizeof(cl_mem), &CLTextureID[TEXTUREID::VELOCITYTMP]);
+  clSetKernelArg(kernel, 1, sizeof(cl_mem), &CLTextureID[TEXTUREID::DENSITYTMP]);
+  clSetKernelArg(kernel, 2, sizeof(cl_mem), &CLTextureID[TEXTUREID::VELOCITY]);
+  clSetKernelArg(kernel, 3, sizeof(cl_mem), &CLTextureID[TEXTUREID::DENSITY]);
   clSetKernelArg(kernel, 4, 4 * sizeof(float), &vel);
   clSetKernelArg(kernel, 5, 4 * sizeof(float), &rainbow[(color++) % 7]);
-  size_t global_work_size[2] = {static_cast<size_t>(WINDOW_WITH), static_cast<size_t>(WINDOW_HEIGHT)}; // Replace 1024 with your actual dimensions
+  clSetKernelArg(kernel, 6, sizeof(cl_sampler), &samplerLinearWrap);
+  clSetKernelArg(kernel, 7, sizeof(int32), &x);
+  clSetKernelArg(kernel, 8, sizeof(int32), &y);
+{
+
+  clSetKernelArg(kernel, 9, sizeof(cl_mem), &debug1);
+  clSetKernelArg(kernel, 10, sizeof(cl_mem), &debug2);
+  clSetKernelArg(kernel, 11, sizeof(cl_mem), &debug3);
+  clSetKernelArg(kernel, 12, sizeof(cl_mem), &debug4);
+}
+
   ret = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, global_work_size, NULL, 0, NULL, NULL);
   if (ret != CL_SUCCESS) {
     std::cout << ret << std::endl;
     ft_assert("Error enqueuing kernel");
   }
   clFinish(command_queue);
+  // std::cout << count << std::endl;
+  if (color == 1){
+
+  clEnqueueReadBuffer(command_queue, debug1, CL_TRUE, 0, 
+            count * sizeof(float), A, 0, NULL, NULL);
+  clEnqueueReadBuffer(command_queue, debug2, CL_TRUE, 0, 
+            count * sizeof(float), B, 0, NULL, NULL);
+  clEnqueueReadBuffer(command_queue, debug3, CL_TRUE, 0, 
+            count * sizeof(float), C, 0, NULL, NULL);
+  clEnqueueReadBuffer(command_queue, debug4, CL_TRUE, 0, 
+            count * sizeof(float), D, 0, NULL, NULL);
+  for (int i =1920; i < 1920 * 2; ++i){
+    std::cout << "width : "<<A[i] << "  x : " << B[i] << " y : " << C[i] << "  a : " << D[i] << std::endl;
+  }
+  }
 }
 
 

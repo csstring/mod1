@@ -8,6 +8,7 @@ class StableFluidsManager : Noncopyable
 {
   private:
     uint32 _VAO;
+    uint32 _tmptexID;
     void initTexture();
 
   public:

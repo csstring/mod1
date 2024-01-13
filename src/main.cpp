@@ -90,7 +90,7 @@ int main(int ac, char** av)
         std::cerr << "input error : to many argument\n";
         return 1;
     }
-    cvcheck();
+    // cvcheck();
     float count = std::atof(av[1]);
     if (count == 0.0f){
         std::cerr << "input error : not number";

@@ -12,11 +12,7 @@ void Texture2D::initialize(GLenum internalFormat)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, WINDOW_WITH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, static_cast<int>(WINDOW_WITH), static_cast<int>(WINDOW_HEIGHT), 0, GL_RGBA, GL_FLOAT, NULL);
 
   glBindTexture(GL_TEXTURE_2D, 0);
-  int a = 0;
-  const int tmpa = a;
-  a = tmpa + 1;
-  
 }

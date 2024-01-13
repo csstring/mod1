@@ -1,6 +1,6 @@
 CXX = c++ 
 CXXFLAGS = -std=c++17 -O3 #-Wall -Wextra -Werror
-LDFLAGS = #-fsanitize=address -g
+LDFLAGS = -fsanitize=address -g
 
 SRC_DIR = ./src
 

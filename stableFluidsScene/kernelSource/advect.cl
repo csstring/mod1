@@ -1,10 +1,12 @@
+
 __kernel void advect(
     __read_only image2d_t velocityTemp,
     __read_only image2d_t densityTemp,
     __write_only image2d_t velocity,
     __write_only image2d_t density,
     sampler_t samplerLinearWrap,
-    float dt)
+    float dt
+)
 {
     int width = get_image_width(velocityTemp);
     int height = get_image_height(velocityTemp);

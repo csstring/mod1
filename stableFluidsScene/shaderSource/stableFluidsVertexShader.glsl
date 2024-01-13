@@ -10,6 +10,6 @@ out vec2 texCoord;
 
 void main() {
 
-    gl_Position = projection * view * _position;
+    gl_Position = _position;
     texCoord = _uv;
 }
