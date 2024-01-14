@@ -1,6 +1,5 @@
 #include "StableFluidsManager.h"
 #include "Camera.h"
-#include "Particle.h"
 #include "DDSLoder.h" 
 #include "Fluid.h"
 #include "EnumHeader.h"
@@ -14,14 +13,18 @@ StableFluidsManager::~StableFluidsManager()
 
 void StableFluidsManager::initTexture()
 {
-  _textures[TEXTUREID::VELOCITY].initialize(GL_RGBA32F);
-  _textures[TEXTUREID::VELOCITYTMP].initialize(GL_RGBA32F);
-  _textures[TEXTUREID::VORTICITY].initialize(GL_RGBA32F);
-  _textures[TEXTUREID::PRESSURE].initialize(GL_RGBA32F);
-  _textures[TEXTUREID::PRESSURETMP].initialize(GL_RGBA32F);
-  _textures[TEXTUREID::DIVERGENCE].initialize(GL_RGBA32F);
-  _textures[TEXTUREID::DENSITY].initialize(GL_RGBA32F);
-  _textures[TEXTUREID::DENSITYTMP].initialize(GL_RGBA32F);
+  uint64 w = static_cast<uint64>(WINDOW_WITH)/ 4;
+  uint64 h = static_cast<uint64>(WINDOW_HEIGHT)/4;
+
+  _textures[TEXTUREID::VELOCITYID].initialize(GL_RGBA32F,w,h);
+  _textures[TEXTUREID::VELOCITYTMPID].initialize(GL_RGBA32F,w,h);
+  _textures[TEXTUREID::VORTICITYID].initialize(GL_RGBA32F,w,h);
+  _textures[TEXTUREID::PRESSUREID].initialize(GL_RGBA32F,w,h);
+  _textures[TEXTUREID::PRESSURETMPID].initialize(GL_RGBA32F,w,h);
+  _textures[TEXTUREID::DIVERGENCEID].initialize(GL_RGBA32F,w,h);
+  _textures[TEXTUREID::DIVERGENCETMPID].initialize(GL_RGBA32F,w,h);
+  _textures[TEXTUREID::DENSITYID].initialize(GL_RGBA32F,w,h);
+  _textures[TEXTUREID::DENSITYTMPID].initialize(GL_RGBA32F,w,h);
 }
 
 void StableFluidsManager::initialize()
@@ -57,7 +60,7 @@ void StableFluidsManager::initialize()
 void StableFluidsManager::draw()
 {
   glBindVertexArray(_VAO);
-  glBindTexture(GL_TEXTURE_2D, _textures[TEXTUREID::DENSITY].getID());
+  glBindTexture(GL_TEXTURE_2D, _textures[TEXTUREID::DENSITYID].getID());
   glDrawArrays(GL_TRIANGLES, 0, 6);
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindVertexArray(0);

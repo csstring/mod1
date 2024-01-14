@@ -14,7 +14,7 @@ class StableFluidsManager : Noncopyable
   public:
     glm::vec3 _camPos;
     uint32 _VBO;
-    Texture2D _textures[8];
+    Texture2D _textures[9];
 
   public:
     StableFluidsManager(){};

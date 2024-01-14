@@ -8,7 +8,10 @@ enum SFKernelFunc {
   SOURCING,
   ADVECT,
   COPY,
-  PRINT
+  PRINT,
+  DIVERGENCE,
+  JACOBI,
+  APPLYPRESSURE
 };
 
 class Texture2D;
@@ -30,11 +33,13 @@ class StableFluidsCLManager
     cl_uint ret_num_platforms;
     cl_int ret;
     cl_command_queue command_queue;
-    cl_sampler samplerLinearWrap;
-    cl_mem CLTextureID[8];
+    cl_sampler samplerLinearWrap, samplerPointWrap;
+    cl_mem CLTextureID[9];
 
+    const size_t global_work_size[2] = {static_cast<size_t>(WINDOW_WITH)/4, static_cast<size_t>(WINDOW_HEIGHT)/4};
     std::vector<KernelProgram> _programs;
     void printTextureColor(TEXTUREID);
+    void copyImage(TEXTUREID src, TEXTUREID dst);
 
   public:
     std::random_device _rd;
@@ -43,7 +48,8 @@ class StableFluidsCLManager
     ~StableFluidsCLManager();
     void initialize(Texture2D* textureids);
     void sourcing(const glm::vec4& cursor);
-    void copyImage(TEXTUREID src, TEXTUREID dst);
+    void projection();
+    void advection(float dt);
     void stableFluidsGenerate(float dt, const glm::vec4& gravity);
     void update(float dt, const glm::vec4& gravity, int32 drawCount);
 

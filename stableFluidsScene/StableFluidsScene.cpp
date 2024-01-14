@@ -14,6 +14,8 @@ void StableFluidsScene::update(float dt)
 {
   glm::vec4 gravity = Camera::getInstance().getWorldCursorPos();
   _stableFluidsCLManager.sourcing(gravity);
+  _stableFluidsCLManager.projection();
+  _stableFluidsCLManager.advection(dt);
 }
 
 void StableFluidsScene::draw()

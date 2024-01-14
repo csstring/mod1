@@ -12,7 +12,7 @@ class Simulator : Noncopyable
         int32 _speed;
 
     public:
-        Simulator() : _speed(0){};
+        Simulator() : _speed(1){};
         ~Simulator();
         
         void initialize(uint32 particlecount);
