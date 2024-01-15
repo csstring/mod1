@@ -37,9 +37,7 @@ void StableFluidsManager::initialize()
   fluids.push_back({glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec2(0.0f, 1.0f)}); // Top-left
   fluids.push_back({glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f), glm::vec2(1.0f, 0.0f)}); // Bottom-right
   fluids.push_back({glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec2(1.0f, 1.0f)}); // Top-right
-  DDSLoder textureLoder(std::filesystem::canonical("./stableFluidsScene/uvmap.dds"));
-  _tmptexID = textureLoder.loadDDS();
-  
+
   initTexture();
   glGenVertexArrays(1, &_VAO);
   glBindVertexArray(_VAO);

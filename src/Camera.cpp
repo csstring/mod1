@@ -13,6 +13,7 @@ void Camera::initialize(void)
     _fov = 80.0f;
     _isFirst = true;
     _isOn = false;
+    _clickOn = false;
     _cameraPos = glm::vec3(0, 0 ,2.0);
     _cameraUp = glm::vec3(0,1,0);
     _cameraFront = glm::vec3(0,0,-1);

@@ -59,7 +59,7 @@ void StableFluidsCLManager::initialize(Texture2D* textureids)
     ft_assert("clCreateFromGLBuffer");
   }
 
-  _programs.resize(7);
+  _programs.resize(10);
   _programs[SFKernelFunc::SOURCING].initialize(context, device_id, "./stableFluidsScene/kernelSource/sourcing.cl", "sourcing");
   _programs[SFKernelFunc::ADVECT].initialize(context, device_id, "./stableFluidsScene/kernelSource/advect.cl", "advect");
   _programs[SFKernelFunc::COPY].initialize(context, device_id, "./stableFluidsScene/kernelSource/copyTexture.cl", "copyTexture");
@@ -67,7 +67,10 @@ void StableFluidsCLManager::initialize(Texture2D* textureids)
   _programs[SFKernelFunc::DIVERGENCE].initialize(context, device_id, "./stableFluidsScene/kernelSource/divergence.cl", "divergence");
   _programs[SFKernelFunc::JACOBI].initialize(context, device_id, "./stableFluidsScene/kernelSource/jacobi.cl", "jacobi");
   _programs[SFKernelFunc::APPLYPRESSURE].initialize(context, device_id, "./stableFluidsScene/kernelSource/applyPressure.cl", "applyPressure");
-  
+  _programs[SFKernelFunc::DIFFUSE].initialize(context, device_id, "./stableFluidsScene/kernelSource/diffuse.cl", "diffuse");
+  _programs[SFKernelFunc::COMPUTEVORTICITY].initialize(context, device_id, "./stableFluidsScene/kernelSource/computeVorticity.cl", "computeVorticity");
+  _programs[SFKernelFunc::CONFINEVORTICITY].initialize(context, device_id, "./stableFluidsScene/kernelSource/confineVorticity.cl", "confineVorticity");
+
   debug1 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, 
             count * sizeof(float), NULL, &ret);
   debug2 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, 
@@ -171,6 +174,9 @@ void StableFluidsCLManager::sourcing(const glm::vec4& cursor)
   glm::vec4 vel(cam._lastX / 4 - x,(WINDOW_HEIGHT - cam._lastY)/4 - y, 0.0f, 0.0f);
   x = cam._lastX / 4;
   y = (WINDOW_HEIGHT - cam._lastY)/4;
+  if (cam._clickOn == true){
+    vel.w = 1;
+  }
   copyImage(TEXTUREID::VELOCITYID, TEXTUREID::VELOCITYTMPID);
   copyImage(TEXTUREID::DENSITYID, TEXTUREID::DENSITYTMPID);
 
@@ -211,6 +217,65 @@ void StableFluidsCLManager::sourcing(const glm::vec4& cursor)
   //   std::cout << "width : "<<A[i] << "  x : " << B[i] << " y : " << C[i] << "  a : " << D[i] << std::endl;
   // }
   // }
+}
+
+void StableFluidsCLManager::vorticity(float dt)
+{
+  cl_kernel kernel = _programs[SFKernelFunc::COMPUTEVORTICITY]._kernel;
+  clSetKernelArg(kernel, 0, sizeof(cl_mem), &CLTextureID[TEXTUREID::VORTICITYID]);
+  clSetKernelArg(kernel, 1, sizeof(cl_mem), &CLTextureID[TEXTUREID::VELOCITYID]);
+  ret = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, global_work_size, NULL, 0, NULL, NULL);
+  if (ret != CL_SUCCESS) {
+    std::cout << ret << std::endl;
+    ft_assert("Error enqueuing kernel");
+  }
+  clFinish(command_queue);
+
+  copyImage(TEXTUREID::VELOCITYID, TEXTUREID::VELOCITYTMPID);
+  kernel = _programs[SFKernelFunc::CONFINEVORTICITY]._kernel;
+  clSetKernelArg(kernel, 0, sizeof(cl_mem), &CLTextureID[TEXTUREID::VORTICITYID]);
+  clSetKernelArg(kernel, 1, sizeof(cl_mem), &CLTextureID[TEXTUREID::VELOCITYTMPID]);
+  clSetKernelArg(kernel, 2, sizeof(cl_mem), &CLTextureID[TEXTUREID::VELOCITYID]);
+  clSetKernelArg(kernel, 3, sizeof(float), &dt);
+  ret = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, global_work_size, NULL, 0, NULL, NULL);
+  if (ret != CL_SUCCESS) {
+    std::cout << ret << std::endl;
+    ft_assert("Error enqueuing kernel");
+  }
+  clFinish(command_queue);
+}
+
+void StableFluidsCLManager::diffuse(float dt,float viscosity)
+{
+  cl_kernel kernel = _programs[SFKernelFunc::DIFFUSE]._kernel;
+  copyImage(TEXTUREID::VELOCITYID, TEXTUREID::VELOCITYTMPID);
+  copyImage(TEXTUREID::DENSITYID, TEXTUREID::DENSITYTMPID);
+
+  for (int i =0; i < 10; ++i)
+  {
+    if (i % 2 == 0)
+    {
+      clSetKernelArg(kernel, 0, sizeof(cl_mem), &CLTextureID[TEXTUREID::VELOCITYID]);
+      clSetKernelArg(kernel, 1, sizeof(cl_mem), &CLTextureID[TEXTUREID::DENSITYID]);
+      clSetKernelArg(kernel, 2, sizeof(cl_mem), &CLTextureID[TEXTUREID::VELOCITYTMPID]);
+      clSetKernelArg(kernel, 3, sizeof(cl_mem), &CLTextureID[TEXTUREID::DENSITYTMPID]);
+    }
+    else 
+    {
+      clSetKernelArg(kernel, 0, sizeof(cl_mem), &CLTextureID[TEXTUREID::VELOCITYTMPID]);
+      clSetKernelArg(kernel, 1, sizeof(cl_mem), &CLTextureID[TEXTUREID::DENSITYTMPID]);
+      clSetKernelArg(kernel, 2, sizeof(cl_mem), &CLTextureID[TEXTUREID::VELOCITYID]);
+      clSetKernelArg(kernel, 3, sizeof(cl_mem), &CLTextureID[TEXTUREID::DENSITYID]);
+    }
+    clSetKernelArg(kernel, 4, sizeof(float), &viscosity);
+    clSetKernelArg(kernel, 5, sizeof(float), &dt);
+    ret = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, global_work_size, NULL, 0, NULL, NULL);
+    if (ret != CL_SUCCESS) {
+      std::cout << ret << std::endl;
+      ft_assert("Error enqueuing kernel");
+    }
+    clFinish(command_queue);
+  }
 }
 
 void StableFluidsCLManager::projection()

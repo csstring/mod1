@@ -12,6 +12,15 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    Camera& _camera = Camera::getInstance();
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        _camera._clickOn = true;
+    } else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE){
+        _camera._clickOn = false;
+    }
+}
+
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
     (void)window;
@@ -108,6 +117,7 @@ int main(int ac, char** av)
     glfwSetFramebufferSizeCallback(window._window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window._window, mouse_callback);
     glfwSetInputMode(window._window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    glfwSetMouseButtonCallback(window._window, mouse_button_callback);
     constexpr float delta = 1.0f / 60.0f;
 
     while (window.isWindowClose() == false)

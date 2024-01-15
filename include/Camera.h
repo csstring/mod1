@@ -30,6 +30,7 @@ class Camera
         float _fov;
         bool _isFirst;
         bool _isOn;
+        bool _clickOn;
         float _lastX;
         float _lastY;
         float _zNear = 0.1;

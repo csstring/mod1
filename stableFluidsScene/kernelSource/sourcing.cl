@@ -27,13 +27,15 @@ __kernel void sourcing(
   // B[dtID.x + width * dtID.y ] = (float)(dtID.x);
   // C[dtID.x + width * dtID.y ] = (float)(dtID.y);
   // D[dtID.x + width * dtID.y ] = (float)(width);
+  
   float4 color = read_imagef(densityTemp, dtID);
   color.r = max(0.0f, color.r - 0.001f);
   color.g = max(0.0f, color.g - 0.001f);
   color.b = max(0.0f, color.b - 0.001f);
   write_imagef(density, dtID, color); 
   float radius = 10;
-  if(x < width && x > 0 && y < h && y > 0)
+  
+  if(sourcingVelocity.w == 1 && x < width && x > 0 && y < h && y > 0)
   {
     float dist = length(convert_float2(dtID) - (float2)(x,y)) / radius;
     float scale = smootherstep(1.0f - dist);

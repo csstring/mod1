@@ -11,7 +11,10 @@ enum SFKernelFunc {
   PRINT,
   DIVERGENCE,
   JACOBI,
-  APPLYPRESSURE
+  APPLYPRESSURE,
+  DIFFUSE,
+  COMPUTEVORTICITY,
+  CONFINEVORTICITY
 };
 
 class Texture2D;
@@ -48,6 +51,8 @@ class StableFluidsCLManager
     ~StableFluidsCLManager();
     void initialize(Texture2D* textureids);
     void sourcing(const glm::vec4& cursor);
+    void vorticity(float dt);
+    void diffuse(float dt,float viscosity);
     void projection();
     void advection(float dt);
     void stableFluidsGenerate(float dt, const glm::vec4& gravity);
