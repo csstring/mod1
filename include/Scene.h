@@ -5,5 +5,6 @@ class Scene
     virtual void initialize() = 0;
     virtual void update(float dt) = 0;
     virtual void draw() = 0;
+    virtual void guiRender() = 0;
     virtual ~Scene(){};
 };

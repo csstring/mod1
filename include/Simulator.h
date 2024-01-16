@@ -9,6 +9,7 @@ class Simulator : Noncopyable
     public:
         std::unique_ptr<Scene> _particleScene;
         std::unique_ptr<Scene> _stableFluidsScene;
+        Scene* _currentScene;
         int32 _speed;
 
     public:

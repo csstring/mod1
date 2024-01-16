@@ -21,6 +21,7 @@ class StableFluidsScene : public Scene
     ~StableFluidsScene(){}
 
     void initialize();
+    void guiRender();
     void update(float dt);
     void draw();
 };

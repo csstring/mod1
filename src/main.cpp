@@ -13,11 +13,21 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-    Camera& _camera = Camera::getInstance();
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-        _camera._clickOn = true;
-    } else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE){
-        _camera._clickOn = false;
+    ImGuiIO& io = ImGui::GetIO();
+    
+    // Update IMGUI mouse status
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        io.MouseDown[0] = action == GLFW_PRESS;
+    }
+
+    // Check if IMGUI wants to capture the mouse
+    if (!io.WantCaptureMouse) {
+        Camera& _camera = Camera::getInstance();
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+            _camera._clickOn = true;
+        } else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+            _camera._clickOn = false;
+        }
     }
 }
 

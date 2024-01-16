@@ -7,20 +7,19 @@ Simulator::~Simulator(){}
 
 void Simulator::initialize(uint32 particlecount)
 {
-  // this->_particleScene = std::make_unique<ParticleScene>(particlecount);
-  // this->_particleScene->initialize();
+  _particleScene = std::make_unique<ParticleScene>(particlecount);
+  _particleScene->initialize();
   _stableFluidsScene = std::make_unique<StableFluidsScene>();
   _stableFluidsScene->initialize();
+  _currentScene = _particleScene.get();
 }
 
 void Simulator::draw(void)
 {
-  _stableFluidsScene->draw();
-  // _particleScene->draw();
+  _currentScene->draw();
 }
 
 void Simulator::update(float delta)
 {
-  _stableFluidsScene->update(delta);
-  // _particleScene->update(delta);
+  _currentScene->update(delta);
 }

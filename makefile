@@ -15,9 +15,9 @@ GLFW_LIB_DIR = $(LIB_DIR)
 
 TARGET = ./particle
 
-SOURCES = $(wildcard $(SRC_DIR)/*.cpp ./imgui/*.cpp ./stableFluidsScene/*.cpp)
+SOURCES = $(wildcard $(SRC_DIR)/*.cpp ./imgui/*.cpp ./stableFluidsScene/*.cpp ./particleScene/*.cpp)
 
-OBJECTS = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(patsubst ./imgui/%.cpp,$(OBJ_DIR)/%.o,$(patsubst ./stableFluidsScene/%.cpp,$(OBJ_DIR)/%.o,$(SOURCES))))
+OBJECTS = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(patsubst ./imgui/%.cpp,$(OBJ_DIR)/%.o,$(patsubst ./stableFluidsScene/%.cpp,$(OBJ_DIR)/%.o,$(patsubst ./particleScene/%.cpp,$(OBJ_DIR)/%.o,$(SOURCES)))))
 
 all: $(TARGET)
 
@@ -31,6 +31,9 @@ $(OBJ_DIR)/%.o: ./imgui/%.cpp
 	$(CXX) $(CXXFLAGS) -I$(INC_DIR) -Iimgui/$(INC_DIR) -IstableFluidsScene/$(INC_DIR) -IparticleScene/$(INC_DIR) -c $< -o $@
 
 $(OBJ_DIR)/%.o: ./stableFluidsScene/%.cpp
+	$(CXX) $(CXXFLAGS) -I$(INC_DIR) -Iimgui/$(INC_DIR) -IstableFluidsScene/$(INC_DIR) -IparticleScene/$(INC_DIR) -c $< -o $@
+
+$(OBJ_DIR)/%.o: ./particleScene/%.cpp
 	$(CXX) $(CXXFLAGS) -I$(INC_DIR) -Iimgui/$(INC_DIR) -IstableFluidsScene/$(INC_DIR) -IparticleScene/$(INC_DIR) -c $< -o $@
 
 clean:

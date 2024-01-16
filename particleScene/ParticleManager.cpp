@@ -11,9 +11,6 @@ ParticleManager::~ParticleManager()
 
 void ParticleManager::initialize()
 {
-  DDSLoder textureLoder(std::filesystem::canonical("./particleScene/uvmap.dds"));
-  _textureID = textureLoder.loadDDS();
-
   glGenVertexArrays(1, &_VAO);
   glBindVertexArray(_VAO);
   glGenBuffers(1, &_VBO);

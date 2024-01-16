@@ -28,5 +28,6 @@ class ParticleScene : public Scene
 
     void initialize();
     void update(float dt);
+    void guiRender();
     void draw();
 };
