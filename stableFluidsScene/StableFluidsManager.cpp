@@ -30,13 +30,13 @@ void StableFluidsManager::initTexture()
 void StableFluidsManager::initialize()
 {
   std::vector<Fluid> fluids;
-  fluids.push_back({glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec2(0.0f, 1.0f)}); // Top-left
-  fluids.push_back({glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f), glm::vec2(0.0f, 0.0f)}); // Bottom-left
-  fluids.push_back({glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f), glm::vec2(1.0f, 0.0f)}); // Bottom-right
+  fluids.push_back({glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f), glm::vec2(0.0f, 1.0f)}); // Top-left
+  fluids.push_back({glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f), glm::vec2(0.0f, 0.0f)}); // Bottom-left
+  fluids.push_back({glm::vec4( 1.0f, 1.0f, -1.0f, 1.0f), glm::vec2(1.0f, 0.0f)}); // Bottom-right
 
-  fluids.push_back({glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec2(0.0f, 1.0f)}); // Top-left
-  fluids.push_back({glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f), glm::vec2(1.0f, 0.0f)}); // Bottom-right
-  fluids.push_back({glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec2(1.0f, 1.0f)}); // Top-right
+  fluids.push_back({glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f), glm::vec2(0.0f, 1.0f)}); // Top-left
+  fluids.push_back({glm::vec4( 1.0f, 1.0f, -1.0f, 1.0f), glm::vec2(1.0f, 0.0f)}); // Bottom-right
+  fluids.push_back({glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f), glm::vec2(1.0f, 1.0f)}); // Top-right
 
   initTexture();
   glGenVertexArrays(1, &_VAO);

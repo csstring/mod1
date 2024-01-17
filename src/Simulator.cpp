@@ -2,6 +2,7 @@
 #include "Camera.h"
 #include "ParticleScene.h"
 #include "StableFluidsScene.h"
+#include "CloudScene.h"
 
 Simulator::~Simulator(){}
 
@@ -11,6 +12,8 @@ void Simulator::initialize(uint32 particlecount)
   _particleScene->initialize();
   _stableFluidsScene = std::make_unique<StableFluidsScene>();
   _stableFluidsScene->initialize();
+  _cloudScene = std::make_unique<CloudScene>();
+  _cloudScene->initialize();
   _currentScene = _particleScene.get();
 }
 

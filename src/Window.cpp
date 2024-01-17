@@ -33,7 +33,7 @@ void Window::initialize(void)
     glEnable(GL_CULL_FACE);
     glPointSize(4);
     glCullFace(GL_BACK);
-    glFrontFace(GL_CCW); 
+    glFrontFace(GL_CW); 
     glDepthFunc(GL_LESS);
 }
 

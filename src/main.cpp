@@ -14,8 +14,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
     ImGuiIO& io = ImGui::GetIO();
-    
-    // Update IMGUI mouse status
+
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
         io.MouseDown[0] = action == GLFW_PRESS;
     }
@@ -76,6 +75,11 @@ void cvcheck() {
 
         clGetPlatformInfo(platforms[i], CL_PLATFORM_EXTENSIONS, 1024, info, NULL);
         std::cout << "Platform Extensions: " << info << std::endl;
+        if (strstr(info, "cl_khr_3d_image_writes") != NULL) {
+            std::cout << "\tcl_khr_3d_image_writes supported" << std::endl;
+        } else {
+            std::cout << "\tcl_khr_3d_image_writes not supported" << std::endl;
+        }
 
         cl_uint numDevices;
         clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, 0, NULL, &numDevices);
@@ -90,11 +94,20 @@ void cvcheck() {
             clGetDeviceInfo(devices[j], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(maxWorkGroupSize), &maxWorkGroupSize, NULL);
             std::cout << "\tMax Work Group Size: " << maxWorkGroupSize << std::endl;
             cl_bool imageSupport;
-            clGetDeviceInfo(devices[j], CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &imageSupport, NULL);
-            std::cout << "\tImage Support: " << (imageSupport ? "Yes" : "No") << std::endl;
-        }
+        clGetDeviceInfo(devices[j], CL_DEVICE_IMAGE_SUPPORT, sizeof(cl_bool), &imageSupport, NULL);
+        std::cout << "\tImage Support: " << (imageSupport ? "Yes" : "No") << std::endl;
 
-        free(devices);
+        char deviceExtensions[2048];
+        clGetDeviceInfo(devices[j], CL_DEVICE_EXTENSIONS, sizeof(deviceExtensions), deviceExtensions, NULL);
+        std::cout << "\tDevice Extensions: " << deviceExtensions << std::endl;
+        if (strstr(deviceExtensions, "cl_khr_3d_image_writes") != NULL) {
+            std::cout << "\t\tcl_khr_3d_image_writes supported" << std::endl;
+        } else {
+            std::cout << "\t\tcl_khr_3d_image_writes not supported" << std::endl;
+        }
+    }
+
+    free(devices);
     }
 
     free(platforms);
@@ -109,7 +122,7 @@ int main(int ac, char** av)
         std::cerr << "input error : to many argument\n";
         return 1;
     }
-    // cvcheck();
+    cvcheck();
     float count = std::atof(av[1]);
     if (count == 0.0f){
         std::cerr << "input error : not number";

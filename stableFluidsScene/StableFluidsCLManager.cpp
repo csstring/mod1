@@ -169,11 +169,11 @@ void StableFluidsCLManager::sourcing(const glm::vec4& cursor)
   static int color = 0;
   Camera cam = Camera::getInstance();
   static int32 x = cam._lastX / 4;
-  static int32 y = (WINDOW_HEIGHT - cam._lastY)/4;
+  static int32 y = cam._lastY/4;
 
-  glm::vec4 vel(cam._lastX / 4 - x,(WINDOW_HEIGHT - cam._lastY)/4 - y, 0.0f, 0.0f);
+  glm::vec4 vel(cam._lastX / 4 - x, cam._lastY/4 - y, 0.0f, 0.0f);
   x = cam._lastX / 4;
-  y = (WINDOW_HEIGHT - cam._lastY)/4;
+  y = cam._lastY/4;
   if (cam._clickOn == true){
     vel.w = 1;
   }
@@ -336,7 +336,7 @@ StableFluidsCLManager::~StableFluidsCLManager()
   ret = clFlush(command_queue);
   ret = clFinish(command_queue);
   this->_programs.clear();
-  for (int i =0; i <8; ++i){
+  for (int i =0; i <10; ++i){
     clReleaseMemObject(this->CLTextureID[i]);
   }
   ret = clReleaseCommandQueue(command_queue);
