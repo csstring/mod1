@@ -1,4 +1,4 @@
-#include "Shader.h"
+#include "shader.h"
 
 class CloudShader : public Shader
 {

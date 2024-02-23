@@ -32,8 +32,6 @@ void Mygui::update(Simulator& simul)
       simul._currentScene = simul._particleScene.get();
   if (ImGui::Button("stable Fluids scene"))
       simul._currentScene = simul._stableFluidsScene.get();
-  if (ImGui::Button("cloudScene scene"))
-      simul._currentScene = simul._cloudScene.get();
 
   ImGui::End();
   simul._currentScene->guiRender();

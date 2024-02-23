@@ -4,7 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include "Shader.h"
+#include "shader.h"
 
 void Shader::attachShader(const char* shaderRelativePath, uint32 shaderType)
 {

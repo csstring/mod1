@@ -1,6 +1,6 @@
 #define GL_SILENCE_DEPRECATION
 #include "Window.h"
-#include "Shader.h"
+#include "shader.h"
 #include "Simulator.h"
 #include "Camera.h"
 #include <iostream>

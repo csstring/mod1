@@ -22,6 +22,6 @@ __kernel void confineVorticity(
   }
   float3 psi = (float3)(normalize(eta).xy, 0.0f);
   float3 omega = (float3)(0.0f, 0.0f, read_imagef(vorticity, dtID).x);
-  float4 res = (float4)(cross(psi, omega).xy * 0.04f * dt, 0.0f,0.0f);
+  float4 res = (float4)(cross(psi, omega).xy * 0.02f * dt, 0.0f,0.0f);
   write_imagef(velocity, dtID, read_imagef(velocitytemp,dtID) + res);
 }
